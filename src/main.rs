@@ -38,7 +38,7 @@ fn main() {
         }
     } else {
         match &args[1][..] {
-            "list" => {
+            "list" | "l" => {
                 if let Ok(test) = func::string_from_file(&file) {
                     println!("Added aliases:\n\n{}", test);
                     return;
@@ -47,7 +47,7 @@ fn main() {
                     func::help_info(&error, 1);
                 }
             },
-            "help" => func::help_info(consts::HELP_INFO, 0),
+            "help" | "h" => func::help_info(consts::HELP_INFO, 0),
             _ => (),
         }
     }
@@ -60,7 +60,7 @@ fn main() {
         }
     } else {
         match &args[1][..] {
-            "start" => {
+            "start" | "s"  => {
                 let r = cmds::start(&args[2], &file);
                 if r != Ok(()) {
                     if let Err(e) = r {
@@ -69,7 +69,7 @@ fn main() {
                 }
                 return;
             },
-            "remove" => {
+            "remove" | "r" => {
                 let r = cmds::remove(&args[2], &file);
                 if r != Ok(()) {
                     if let Err(e) = r {
@@ -89,7 +89,7 @@ fn main() {
         }
     } else {
         match &args[1][..] {
-            "new" => {
+            "new" | "n" => {
                 let r = format!("\"{}\"", &args[2]);
                 cmds::new(&r, &args[3], &file);
             },

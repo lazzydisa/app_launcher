@@ -22,6 +22,9 @@ pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) {
             } else {
                 println!("The {} alias is already exist!", name);
             }
+        } else {
+            let r = format!("{}: {}", name, path);
+            func::write(&r, file);
         }
     }
 }

@@ -1,3 +1,3 @@
 /target
-/.cache.sh
-/Cargo.lock
+.cache.sh
+Cargo.lock

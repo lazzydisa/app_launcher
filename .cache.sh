@@ -1,1 +1,1 @@
-echo nigger
+echo hello world

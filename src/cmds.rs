@@ -26,12 +26,12 @@ pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) {
     }
 }
 
-/* code of the `start` command
+/* code of the `run` command
  *
  * name - name of the alias in the ~/.config/apps/list file
  * file - the ~/.config/apps/list file
  */
-pub fn start<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
+pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
     let mut vec: Vec<(String, String)> = Vec::new();
 
     if let Ok(info) = func::string_from_file(file) {
@@ -64,12 +64,12 @@ pub fn start<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
     Ok(())
 }
 
-/* code of the `remove` command
+/* code of the `delete` command
  *
  * name - name of the alias you would like remove from file
  * file - the ~/.config/apps/list file
  */
-pub fn remove<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
+pub fn delete<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
     if let Ok(st) = func::string_from_file(&file) {
         let mut r = String::new();
 
@@ -84,5 +84,21 @@ pub fn remove<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
         return Err(String::from("Can't read the file"));
     }
 
+    Ok(())
+}
+
+/* code of the `search` command
+ *
+ */
+pub fn search<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
+    if let Ok(st) = func::string_from_file(&file) {
+        for line in st.lines() {
+            if line.contains(name) {
+                println!("{}", line);
+            }
+        }
+    } else {
+        return Err(String::from("Can't read the file"));
+    }
     Ok(())
 }

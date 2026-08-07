@@ -60,8 +60,8 @@ fn main() {
         }
     } else {
         match &args[1][..] {
-            "start" | "s"  => {
-                let r = cmds::start(&args[2], &file);
+            "run" | "r"  => {
+                let r = cmds::run(&args[2], &file);
                 if r != Ok(()) {
                     if let Err(e) = r {
                         func::help_info(&e, 1);
@@ -69,15 +69,24 @@ fn main() {
                 }
                 return;
             },
-            "remove" | "r" => {
-                let r = cmds::remove(&args[2], &file);
+            "delete" | "d" => {
+                let r = cmds::delete(&args[2], &file);
                 if r != Ok(()) {
                     if let Err(e) = r {
                         func::help_info(&e, 1);
                     }
                 }
                 return;
-            }, 
+            },
+            "search" | "s" => {
+                let r = cmds::search(&args[2], &file);
+                if r != Ok(()) {
+                    if let Err(e) = r {
+                        func::help_info(&e, 1);
+                    }
+                }
+                return;
+            },
             _ => (),
         }
     }

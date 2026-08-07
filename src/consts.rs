@@ -8,8 +8,8 @@ This program can create apps' aliases without using rc file of your shell
 
 Usage:
     app-launcher list|l                             # print the list of you aliases
-    app-launcher start|s <name>                     # start the alias by its id nember or its name
-    app-launcher remove|r <name>                    # remove the alias by its id nember or its name
+    app-launcher run|r <name>                       # start the alias by its id nember or its name
+    app-launcher delete|d <name>                    # remove the alias by its id nember or its name
     app-launcher new|n <path/to/file --flag> <name> # create new alias through file path and its name
 ";
 
@@ -29,8 +29,8 @@ For `start` and `remove` commands you need to add 3th parameter
 For `new` command you need 4 command line arguments
 
 Usage:
-    app-launcher start|s <name>
-    app-launcher remove|r <name>
+    app-launcher run|r <name>
+    app-launcher delete|d <name>
     app-launcher new|n <path/to/file --flag> <name>
 ";
 

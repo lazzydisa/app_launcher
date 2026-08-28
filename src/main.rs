@@ -2,9 +2,10 @@ use {
     app_launcher::{
         func, 
         cmds, 
-        consts
+        consts,
+        dsc_config_lib::*,
     },
-    std::{env, process},
+    std::env,
 };
 
 fn main() {
@@ -14,19 +15,21 @@ fn main() {
         Ok(val) => val,
         Err(e) => {
             println!("{}", e);
-            process::exit(1);
+            std::process::exit(1);
         },
     };
 
     let dir = format!("/home/{}/.config/apps", user);
-    if func::check_dir(&dir) != Ok(()) {
-        println!("{:?}", func::check_dir(&dir));
-        process::exit(1);
+    if let Err(e) = func::check_dir(&dir) {
+        func::help_info(&e, 1);
     }
 
     let file = format!("{}/list", dir);
     if let Err(_) = func::string_from_file(&file) {
-        func::write("\n", &file); 
+        match func::write("\n", &file) {
+            Ok(()) => (),
+            Err(e) => func::help_info(&e, 1),
+        }
     }
 
     // WARNING! SAFETY PROCCESSING OT THE COMMAND LINE ARGUMENTS
@@ -39,13 +42,15 @@ fn main() {
     } else {
         match &args[1][..] {
             "list" | "l" => {
-                if let Ok(test) = func::string_from_file(&file) {
-                    println!("Added aliases:\n\n{}", test);
-                    return;
-                } else {
-                    let error = format!("{:?}", func::string_from_file(&file)); 
-                    func::help_info(&error, 1);
+                println!("List of your apps' aliases\n");
+
+                if let Ok(v) = Var::parse_file(&file) {
+                    for i in v.iter() {
+                        println!("{}: {}", i.get_name(), i.get_value());
+                    }
                 }
+
+                return;
             },
             "help" | "h" => func::help_info(consts::HELP_INFO, 0),
             _ => (),
@@ -61,30 +66,21 @@ fn main() {
     } else {
         match &args[1][..] {
             "run" | "r"  => {
-                let r = cmds::run(&args[2], &file);
-                if r != Ok(()) {
-                    if let Err(e) = r {
-                        func::help_info(&e, 1);
-                    }
+                match cmds::run(&args[2], &file) {
+                    Ok(()) => (),
+                    Err(e) => func::help_info(&e, 1),
                 }
                 return;
             },
             "delete" | "d" => {
-                let r = cmds::delete(&args[2], &file);
-                if r != Ok(()) {
-                    if let Err(e) = r {
-                        func::help_info(&e, 1);
-                    }
+                match cmds::delete(&args[2], &file) {
+                    Ok(()) => (),
+                    Err(e) => func::help_info(&e, 1),
                 }
                 return;
             },
             "search" | "s" => {
-                let r = cmds::search(&args[2], &file);
-                if r != Ok(()) {
-                    if let Err(e) = r {
-                        func::help_info(&e, 1);
-                    }
-                }
+                cmds::search(&args[2], &file);
                 return;
             },
             _ => (),
@@ -99,8 +95,10 @@ fn main() {
     } else {
         match &args[1][..] {
             "new" | "n" => {
-                let r = format!("\"{}\"", &args[2]);
-                cmds::new(&r, &args[3], &file);
+                match cmds::new(&args[2], &args[3], &file) {
+                    Ok(()) => (),
+                    Err(e) => func::help_info(&e, 1),
+                }
             },
             _ => func::help_info(consts::HELP_INFO, 1),
         }

@@ -1,7 +1,7 @@
 /* Here is descriptions of the commands `start`, `new` and `remove` */
 
 use {
-    crate::{parser::*, func},
+    crate::{dsc_config_lib::*, func},
     std::process::Command,
 };
 
@@ -11,22 +11,25 @@ use {
  * name - name of the alias
  * file - ~/.config/apps/list
  */
-pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) {
-    let buffer = func::string_from_file(file);
-
-    if let Ok(s) = buffer {
-        if s != "\n" {
-            if s.contains(name) == false || s.contains(path) == false {
-                let result = format!("{}\n\n{}: {}", s, name, path);
-                func::write(&result, file);
-            } else {
-                println!("The {} alias is already exist!", name);
+pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) -> Result<(), String> {
+    if let Ok(v) = Var::parse_file(file) {
+        for i in v.iter() {
+            if i.get_name() == name {
+                let e = format!("The {} alias is already exist!", name);
+                return Err(String::from(e));
             }
-        } else {
-            let r = format!("{}: {}", name, path);
-            func::write(&r, file);
+            else {
+                let r = Var::new(name, path);
+
+                match r.write_var(file) {
+                    Ok(()) => (),
+                    Err(e) => return Err(e),
+                }
+            }
         }
     }
+
+    Ok(())
 }
 
 /* code of the `run` command
@@ -35,31 +38,26 @@ pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) {
  * file - the ~/.config/apps/list file
  */
 pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
-    let mut vec: Vec<(String, String)> = Vec::new();
+    if let Ok(v) = Var::parse_file(file) {
+        for i in v.iter() {
+            if i.get_name() == name {
+                match func::write(i.get_value(), ".cache.sh") {
+                    Ok(()) => (),
+                    Err(e) => return Err(e),
+                }
 
-    if let Ok(info) = func::string_from_file(file) {
-        for line in info.lines() {
-            let r = parser(line);
-            if r.0 != "".to_string() && r.1 != "".to_string() {
-                vec.push(r);
-            }
-        }
-    } else {
-        return Err(String::from("Can't read the file"));
-    }
+                match Command::new("chmod").arg("+x").arg(".cache.sh").spawn() {
+                    Ok(_) => (),
+                    Err(_)  => return Err(String::from("Can't start the command (step 1)")),
+                }
 
-    for (n, val) in vec.iter() {
-        if *n == name {
-            func::write(&val, ".cache.sh");
-
-            match Command::new("chmod").arg("+x").arg(".cache.sh").spawn() {
-                Ok(_) => (),
-                Err(_)  => return Err(String::from("Can't start the command (step 1)")),
-            }
-
-            match Command::new("sh").arg(".cache.sh").spawn() {
-                Ok(_) => (),
-                Err(_)  => return Err(String::from("Can't start the command (step 2)")),
+                match Command::new("sh").arg(".cache.sh").spawn() {
+                    Ok(_) => (),
+                    Err(_)  => return Err(String::from("Can't start the command (step 2)")),
+                }
+            } else {
+                let e = format!("the alias {} does not exist", name);
+                return Err(String::from(e));
             }
         }
     }
@@ -69,22 +67,19 @@ pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
 
 /* code of the `delete` command
  *
- * name - name of the alias you would like remove from file
+ * name - name of the alias you would like to remove from the file
  * file - the ~/.config/apps/list file
  */
 pub fn delete<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
-    if let Ok(st) = func::string_from_file(&file) {
-        let mut r = String::new();
-
-        for line in st.lines() {
-            if !line.contains(name) {
-                r.push_str(line);
+    if let Ok(v) = Var::parse_file(file) {
+        for i in v.iter() {
+            if i.get_name() != name {
+                match i.write_var(file) {
+                    Ok(()) => (),
+                    Err(e) => return Err(e),
+                }
             }
         }
-
-        func::write(&r, file);
-    } else {
-        return Err(String::from("Can't read the file"));
     }
 
     Ok(())
@@ -92,16 +87,17 @@ pub fn delete<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
 
 /* code of the `search` command
  *
+ * name - name of the alias you would like to search in the file
+ * file - the ~/.config/apps/list file
  */
-pub fn search<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
-    if let Ok(st) = func::string_from_file(&file) {
-        for line in st.lines() {
-            if line.contains(name) {
-                println!("{}", line);
+pub fn search<'a>(name: &'a str, file: &'a str) {
+    if let Ok(v) = Var::parse_file(file) {
+        for i in v.iter() {
+            if i.get_name() == name {
+                println!("{}: {}", i.get_name(), i.get_value());
+            } else {
+                println!("Alias {} was not found", name);
             }
         }
-    } else {
-        return Err(String::from("Can't read the file"));
     }
-    Ok(())
 }

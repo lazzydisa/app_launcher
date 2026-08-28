@@ -12,8 +12,7 @@ pub fn string_from_file(file: &str) -> Result<String, String> {
 }
 
 // write info to file
-#[inline]
-fn write_to_file(st: &str, filename: &str) -> Result<(), String> {
+pub fn write(st: &str, filename: &str) -> Result<(), String> {
     let mut file = match File::create(filename) {
         Ok(file) => file,
         Err(_) => return Err(String::from("Can't create the file")),
@@ -22,15 +21,6 @@ fn write_to_file(st: &str, filename: &str) -> Result<(), String> {
     match file.write_all(st.as_bytes()) {
         Ok(()) => Ok(()),
         Err(_) => Err(String::from("Can't write to the file")),
-    }
-}
-
-// interface for write_to_file (for `new` command)
-pub fn write(st: &str, filename: &str) {
-    let test = write_to_file(st, filename);
-
-    if test != Ok(()) {
-        println!("{:#?}", test);
     }
 }
 

@@ -12,20 +12,20 @@ use {
  * file - ~/.config/apps/list
  */
 pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) -> Result<(), String> {
-    if let Ok(v) = Var::parse_file(file) {
+    if let Ok(mut v) = Var::parse_file(file) {
+        // will check for an existing alias
         for i in v.iter() {
             if i.get_name() == name {
                 let e = format!("The {} alias is already exist!", name);
                 return Err(String::from(e));
             }
-            else {
-                let r = Var::new(name, path);
+        }
 
-                match r.write_var(file) {
-                    Ok(()) => (),
-                    Err(e) => return Err(e),
-                }
-            }
+        // will write the new alias in the file
+        v.push(Var::new(name, &format!("\"{}\"", path)));
+        match Var::write_var_vec(v, file) {
+            Ok(()) => (),
+            Err(e) => return Err(e),
         }
     }
 
@@ -44,11 +44,6 @@ pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
                 match func::write(i.get_value(), ".cache.sh") {
                     Ok(()) => (),
                     Err(e) => return Err(e),
-                }
-
-                match Command::new("chmod").arg("+x").arg(".cache.sh").spawn() {
-                    Ok(_) => (),
-                    Err(_)  => return Err(String::from("Can't start the command (step 1)")),
                 }
 
                 match Command::new("sh").arg(".cache.sh").spawn() {
@@ -71,15 +66,20 @@ pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
  * file - the ~/.config/apps/list file
  */
 pub fn delete<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
+    let mut vec: Vec<Var> = Vec::new();
+
     if let Ok(v) = Var::parse_file(file) {
         for i in v.iter() {
             if i.get_name() != name {
-                match i.write_var(file) {
-                    Ok(()) => (),
-                    Err(e) => return Err(e),
-                }
+                let st = format!("{}: \"{}\"", i.get_name(), i.get_value());
+                vec = Var::collect_to_vec(&st);
             }
         }
+    }
+
+    match Var::write_var_vec(vec, file) {
+        Ok(()) => (),
+        Err(e) => return Err(e),
     }
 
     Ok(())

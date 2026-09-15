@@ -48,11 +48,10 @@ pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
 
                 match Command::new("sh").arg(".cache.sh").spawn() {
                     Ok(_) => (),
-                    Err(_)  => return Err(String::from("Can't start the command (step 2)")),
+                    Err(_)  => return Err(String::from("Can't start the command")),
                 }
-            } else {
-                let e = format!("the alias {} does not exist", name);
-                return Err(String::from(e));
+
+                break;
             }
         }
     }
@@ -95,8 +94,7 @@ pub fn search<'a>(name: &'a str, file: &'a str) {
         for i in v.iter() {
             if i.get_name() == name {
                 println!("{}: {}", i.get_name(), i.get_value());
-            } else {
-                println!("Alias {} was not found", name);
+                break;
             }
         }
     }

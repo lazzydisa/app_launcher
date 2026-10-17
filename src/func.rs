@@ -46,27 +46,3 @@ pub fn check_dir(path: &String) -> Result<(), String> {
     }
 }
 
-// for printing the help info
-#[inline]
-pub fn help_info(st: &str, status: i32) {
-    println!("{}", st);
-    std::process::exit(status);
-}
-
-// checks command line arguments
-pub fn check_args(args: &Vec<String>, length: usize) -> Result<(), String> {
-    use crate::consts::*;
-
-    let consts_arr = [
-        HELP_INFO,
-        ARGS_LEN_SHOULD_BE_2,
-        ARGS_LEN_SHOULD_BE_3,
-        ARGS_LEN_SHOULD_BE_4,
-    ];
-
-    if args.len() < length {
-        Err(String::from(consts_arr[length-1]))
-    } else {
-        Ok(())
-    }
-}

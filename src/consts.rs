@@ -14,12 +14,7 @@ Usage:
 ";
 
 // if args.len() < 2    (not only fo this usecase)
-pub const ARGS_LEN_SHOULD_BE_2: &str = " 
-App-launcher by lazzydisa
-
-For help information use `help` command:
-    app-launcher help|h
-";
+pub const ARGS_LEN_SHOULD_BE_2: &str = "App-launcher by lazzydisa. For help information use `help` command: `app-launcher help|h`";
 
 // if args.len() < 3 and args[1] == "start" or "remove"
 pub const ARGS_LEN_SHOULD_BE_3: &str = "

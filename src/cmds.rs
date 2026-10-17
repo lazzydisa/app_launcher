@@ -12,22 +12,19 @@ use {
  * file - ~/.config/apps/list
  */
 pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) -> Result<(), String> {
-    if let Ok(mut v) = Var::parse_file(file) {
-        // will check for an existing alias
-        for i in v.iter() {
-            if i.get_name() == name {
-                let e = format!("The {} alias is already exist!", name);
-                return Err(String::from(e));
-            }
-        }
+    let mut v = Var::parse_file(file)?;
 
-        // will write the new alias in the file
-        v.push(Var::new(name, &format!("\"{}\"", path)));
-        match Var::write_var_vec(v, file) {
-            Ok(()) => (),
-            Err(e) => return Err(e),
+    // will check for an existing alias
+    for i in v.iter() {
+        if i.get_name() == name {
+            let e = format!("The {} alias is already exist!", name);
+            return Err(String::from(e));
         }
     }
+
+    // will write the new alias in the file
+    v.push(Var::new(name, &format!("\"{}\"", path)));
+    Var::write_var_vec(&v, file)?;
 
     Ok(())
 }
@@ -38,21 +35,17 @@ pub fn new<'a>(path: &'a str, name: &'a str, file: &'a str) -> Result<(), String
  * file - the ~/.config/apps/list file
  */
 pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
-    if let Ok(v) = Var::parse_file(file) {
-        for i in v.iter() {
-            if i.get_name() == name {
-                match func::write(i.get_value(), ".cache.sh") {
-                    Ok(()) => (),
-                    Err(e) => return Err(e),
-                }
+    let v = Var::parse_file(file)?;
+    for i in v.iter() {
+        if i.get_name() == name {
+            func::write(i.get_value(), ".cache.sh")?;
 
-                match Command::new("sh").arg(".cache.sh").spawn() {
-                    Ok(_) => (),
-                    Err(_)  => return Err(String::from("Can't start the command")),
-                }
-
-                break;
+            match Command::new("sh").arg(".cache.sh").spawn() {
+                Ok(_) => (),
+                Err(_)  => return Err(String::from("Can't start the command")),
             }
+
+            break;
         }
     }
 
@@ -67,19 +60,15 @@ pub fn run<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
 pub fn delete<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
     let mut vec: Vec<Var> = Vec::new();
 
-    if let Ok(v) = Var::parse_file(file) {
-        for i in v.iter() {
-            if i.get_name() != name {
-                let st = format!("{}: \"{}\"", i.get_name(), i.get_value());
-                vec = Var::collect_to_vec(&st);
-            }
+    let v = Var::parse_file(file)?;
+    for i in v.iter() {
+        if i.get_name() != name {
+            let st = format!("{}: \"{}\"", i.get_name(), i.get_value());
+            vec = Var::collect_to_vec(&st);
         }
     }
 
-    match Var::write_var_vec(vec, file) {
-        Ok(()) => (),
-        Err(e) => return Err(e),
-    }
+    Var::write_var_vec(&vec, file)?;
 
     Ok(())
 }
@@ -89,13 +78,14 @@ pub fn delete<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
  * name - name of the alias you would like to search in the file
  * file - the ~/.config/apps/list file
  */
-pub fn search<'a>(name: &'a str, file: &'a str) {
-    if let Ok(v) = Var::parse_file(file) {
-        for i in v.iter() {
-            if i.get_name() == name {
-                println!("{}: {}", i.get_name(), i.get_value());
-                break;
-            }
+pub fn search<'a>(name: &'a str, file: &'a str) -> Result<(), String> {
+    let v = Var::parse_file(file)?;
+    for i in v.iter() {
+        if i.get_name() == name {
+            println!("{}: {}", i.get_name(), i.get_value());
+            break;
         }
     }
+
+    Ok(())
 }
